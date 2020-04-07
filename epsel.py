@@ -2,6 +2,9 @@ import functools
 import logging
 from typing import Callable
 
+# Global dictionary of function pointers
+_FUNCTION_POINTERS = {}
+
 
 def on_first_time(intro: Callable) -> Callable[[Callable], Callable]:
     """
@@ -13,25 +16,32 @@ def on_first_time(intro: Callable) -> Callable[[Callable], Callable]:
     """
 
     def decorator(f: Callable):
-        # Instead of doing some kind of `if first do this else that`
-        # construct that has to be executed each call, we try to be
-        # more efficient by using a "function pointer" trick.
-        # Initially, this `ptr` variable is a function that executes
-        # the `intro` callable and original decorated function `f`,
-        # but it also (re)sets `ptr` to just `f`, so that subsequent
-        # calls don't do `intro` anymore.
+        # Instead of spending time and state on counting and
+        # `if first do this else that` constructs
+        # we try to be more efficient by using a "function pointer" swap trick.
+        # We initialize the function pointer with a "first time"
+        # version that executes `intro`, the original decorated function `f`,
+        # and directly sets the pointer to the to just `f`,
+        # so that subsequent calls don't do `intro` anymore.
+        # Also note that we use global state `_FUNCTION_POINTERS`
+        # instead of closure level state because the latter is not
+        # updated appropriately in PySpark's driver-executor round trip.
 
-        def ptr(*args, **kwargs):
+        key = id(f)
+
+        def first_time(*args, **kwargs):
             # Reset function pointer to original decorated function
-            nonlocal ptr
-            ptr = f
+            _FUNCTION_POINTERS[key] = f
             # Call intro and original function
             intro()
             return f(*args, **kwargs)
 
+        # Initialize with "first time" version
+        _FUNCTION_POINTERS[key] = first_time
+
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
-            return ptr(*args, **kwargs)
+            return _FUNCTION_POINTERS[key](*args, **kwargs)
 
         return wrapper
 
