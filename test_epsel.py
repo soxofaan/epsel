@@ -1,8 +1,11 @@
 import logging
 import unittest.mock as mock
 from io import StringIO
+
 import epsel
 
+
+# TODO test real pyspark runs
 
 def test_on_first_time():
     history = []
@@ -35,19 +38,20 @@ def test_ensure_basic_logging_no_params():
         basicConfig.assert_called_once_with()
 
 
-def test_ensure_basic_logging_level():
+def test_ensure_basic_logging_params():
     with mock.patch('logging.basicConfig') as basicConfig:
-        @epsel.ensure_basic_logging(level=logging.INFO)
+        fmt = "%(message)s"
+        lvl = logging.INFO
+
+        @epsel.ensure_basic_logging(level=lvl, format=fmt)
         def process(x):
             return x * 2
 
         basicConfig.assert_not_called()
         process(1)
-        basicConfig.assert_called_once_with(level=logging.INFO)
+        basicConfig.assert_called_once_with(level=lvl, format=fmt)
         process(2)
-        basicConfig.assert_called_once_with(level=logging.INFO)
-        process(3)
-        basicConfig.assert_called_once_with(level=logging.INFO)
+        basicConfig.assert_called_once_with(level=lvl, format=fmt)
 
 
 def test_ensure_basic_logging_output():

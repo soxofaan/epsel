@@ -56,3 +56,10 @@ def ensure_basic_logging(f=None, **kwargs) -> Callable:
     decorator = on_first_time(lambda: logging.basicConfig(**kwargs))
     # Was decorator used without parenthesis or parameterized?
     return decorator(f) if callable(f) else decorator
+
+
+# Predefined decorator for stderr/INFO logging
+ensure_info_logging = ensure_basic_logging(level=logging.INFO)
+
+# Predefined decorator for stderr/DEBUG logging
+ensure_debug_logging = ensure_basic_logging(level=logging.DEBUG)

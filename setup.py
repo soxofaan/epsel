@@ -21,6 +21,7 @@ setuptools.setup(
     extras_require={
         "dev": [
             "pytest",
+            "pyspark",
         ]
     },
 )

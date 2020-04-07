@@ -17,7 +17,12 @@ from epsel import ensure_basic_logging
 logger = logging.getLogger("example")
 
 
-@ensure_basic_logging(level=logging.INFO)
+with_logging = ensure_basic_logging(
+    level=logging.INFO,
+    format="[%(process)s/%(name)s] %(levelname)s %(message)s"
+)
+
+@with_logging
 def process(x):
     logger.info("Got {x!r}".format(x=x))
     return x * x
