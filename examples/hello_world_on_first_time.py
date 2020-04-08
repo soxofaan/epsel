@@ -4,7 +4,7 @@ Example `epsel` usage
 
 Run on spark, for example as follows:
 
-    spark-submit --master local[1]  examples/hello_world_on_first_time.py
+    spark-submit --master local[2]  examples/hello_world_on_first_time.py
 
 """
 
