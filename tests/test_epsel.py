@@ -1,11 +1,13 @@
 import logging
+import subprocess
 import unittest.mock as mock
 from io import StringIO
+from pathlib import Path
+
+import pytest
 
 import epsel
 
-
-# TODO test real pyspark runs
 
 def test_on_first_time():
     history = []
@@ -77,3 +79,35 @@ def test_ensure_basic_logging_output():
         assert buffer.getvalue() == "INFO:root:Got 1\nINFO:root:Got 2\n"
         process(3)
         assert buffer.getvalue() == "INFO:root:Got 1\nINFO:root:Got 2\nINFO:root:Got 3\n"
+
+
+@pytest.mark.parametrize("workers", [1, 2, 4])
+def test_job_print_hello(workers):
+    job_path = Path(__file__).parent / "job_print_hello.py"
+    result = subprocess.run(
+        [
+            "spark-submit",
+            "--master=local[{w}]".format(w=workers),
+            str(job_path)
+        ],
+        capture_output=True, timeout=60, check=True
+    )
+    assert result.stderr.count(b"Hello world!") == workers
+    assert result.stdout.startswith(b"[0, 1, 4, 9 16, 25")
+
+
+def test_job_log_process():
+    job_path = Path(__file__).parent / "job_log_process.py"
+    res = subprocess.run(
+        ["spark-submit", "--master=local[2]", str(job_path)],
+        capture_output=True, timeout=60, check=True
+    )
+    logs = set(l for l in res.stderr.split(b"\n") if l.startswith(b"___"))
+    assert logs == {
+        b"___ job_log_process INFO Processing 0",
+        b"___ job_log_process INFO Processing 1",
+        b"___ job_log_process INFO Processing 2",
+        b"___ job_log_process INFO Processing 3",
+        b"___ job_log_process INFO Processing 4",
+    }
+    assert res.stdout == b"___ job_log_process INFO Result: [0, 1, 4, 9, 16]\n"
