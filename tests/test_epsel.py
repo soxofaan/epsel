@@ -81,33 +81,36 @@ def test_ensure_basic_logging_output():
         assert buffer.getvalue() == "INFO:root:Got 1\nINFO:root:Got 2\nINFO:root:Got 3\n"
 
 
+def run_job(filename, workers=2):
+    command = [
+        "spark-submit",
+        "--master=local[{w}]".format(w=workers),
+        str(Path(__file__).parent / filename)
+    ]
+    print(command)
+    res = subprocess.run(
+        command,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        timeout=60
+    )
+    print("returncode", res.returncode)
+    print("stdout", res.stdout)
+    print("stderr", res.stderr)
+    return res
+
+
 @pytest.mark.parametrize("workers", [1, 2, 4])
 def test_job_print_hello(workers):
-    job_path = Path(__file__).parent / "job_print_hello.py"
-    result = subprocess.run(
-        [
-            "spark-submit",
-            "--master=local[{w}]".format(w=workers),
-            str(job_path)
-        ],
-        capture_output=True, timeout=60, check=True
-    )
-    assert result.stderr.count(b"Hello world!") == workers
-    assert result.stdout.startswith(b"[0, 1, 4, 9 16, 25")
+    res = run_job("job_print_hello.py", workers=workers)
+    assert res.returncode == 0
+    assert res.stderr.count(b"Hello world!") == workers
+    assert res.stdout.startswith(b"[0, 1, 4, 9, 16, 25")
 
 
 def test_job_log_process():
-    job_path = Path(__file__).parent / "job_log_process.py"
-    res = subprocess.run(
-        ["spark-submit", "--master=local[2]", str(job_path)],
-        capture_output=True, timeout=60, check=True
-    )
-    logs = set(l for l in res.stderr.split(b"\n") if l.startswith(b"___"))
-    assert logs == {
-        b"___ job_log_process INFO Processing 0",
-        b"___ job_log_process INFO Processing 1",
-        b"___ job_log_process INFO Processing 2",
-        b"___ job_log_process INFO Processing 3",
-        b"___ job_log_process INFO Processing 4",
-    }
+    res = run_job("job_log_process.py")
+    assert res.returncode == 0
+    for x in range(5):
+        expected = "___ job_log_process INFO Processing {x}".format(x=x)
+        assert expected.encode('utf-8') in res.stderr
     assert res.stdout == b"___ job_log_process INFO Result: [0, 1, 4, 9, 16]\n"
