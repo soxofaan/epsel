@@ -1,4 +1,6 @@
 
+[![Build Status](https://travis-ci.org/soxofaan/epsel.svg?branch=master)](https://travis-ci.org/soxofaan/epsel)
+
 # EPSEL: Ensure PySpark Executor Logging
 
 `epsel` is a simple Python module that provides
