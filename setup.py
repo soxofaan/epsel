@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="epsel",
-    version="0.1.0",
+    version="1.0.0",
     author="Stefaan Lippens",
     description="Ensure PySpark Executor Logging",
     long_description=long_description,
