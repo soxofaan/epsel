@@ -1,4 +1,6 @@
 
+![PyPI](https://img.shields.io/pypi/v/epsel)
+
 [![Build Status](https://travis-ci.org/soxofaan/epsel.svg?branch=master)](https://travis-ci.org/soxofaan/epsel)
 
 # EPSEL: Ensure PySpark Executor Logging
