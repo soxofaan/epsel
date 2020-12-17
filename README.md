@@ -21,7 +21,7 @@ For example, in your PySpark driver program you can set up
 standard Python logging as desired, 
 but this setup is not replicated in the executor processes.
 There are no (default) logging handlers, so all logging messages are lost.
-Since Python 3.2 however, when there are not handlers, 
+Since Python 3.2 however, when there are no handlers,
 there is still a "last resort" handler that will show 
 `warning()` and `error()` messages in their bare format on standard error,
 but you probably want something more flexible than that.
