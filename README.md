@@ -61,7 +61,7 @@ to `map()`, `filter()`, `sortBy()`, etc.
 
 A very minimal example:
 
-    @epsel.ensure_basic_logging
+    @epsel.ensure_info_logging
     def process(x):
         logger.info("Got {x}".format(x=x))
         return x * x
@@ -69,7 +69,7 @@ A very minimal example:
     result = rdd.map(process).collect()
 
 What will happen here is that the first time `process()` is called 
-in the executor, basic logging is set up as desired, 
+in the executor, basic logging is set up with `INFO` level, 
 so that logging messages are not lost.
 
 
@@ -120,8 +120,8 @@ To improve readability or code reuse, you can of course predefine decorators:
 
 ### Fine-grained logging set up
 
-If a logging setup in `logging.basicConfig()` style is not flexible enough,
-you can also inject your custom setup code with the `on_first_time` decorator.
+If the `logging.basicConfig()` API is not flexible enough for your desired setup,
+you can also inject more advanced setup code with the `on_first_time` decorator.
 This decorator is not limited to logging setup, it just expects
 a callable (that can be called without arguments). A very simple example:
 
@@ -132,3 +132,4 @@ a callable (that can be called without arguments). A very simple example:
 
 This will print "hello world" the first time the `process` function is 
 called in each executor.
+
